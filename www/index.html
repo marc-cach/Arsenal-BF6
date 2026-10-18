@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f1312">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Arsenal BF6">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Arsenal BF6 Saison 5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: barre de classes en haut (sélecteur type déploiement), liste d'armes groupée par catégorie, fiche détail en panneau bas */
+:root{
+  --bg:#0f1312; --panel:#171d1b; --line:#2a3330; --fg:#e7ece9; --mute:#8e9a95;
+  --accent:#f2a922; --accent-ink:#1a1305; --new:#4fd1a5; --soon:#7aa7ff;
+  --sig:#f2a922;
+  --display:"Chakra Petch",ui-sans-serif,system-ui,sans-serif;
+  --body:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){
+  --bg:#f1f3f1; --panel:#ffffff; --line:#d6dcd9; --fg:#141a18; --mute:#5c6863;
+  --accent:#b8780a; --accent-ink:#ffffff; --new:#0f8a63; --soon:#2f5fc4; --sig:#b8780a; color-scheme:light }}
+:root[data-theme="light"]{
+  --bg:#f1f3f1; --panel:#ffffff; --line:#d6dcd9; --fg:#141a18; --mute:#5c6863;
+  --accent:#b8780a; --accent-ink:#ffffff; --new:#0f8a63; --soon:#2f5fc4; --sig:#b8780a; color-scheme:light }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 120px}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header h1{font-family:var(--display);font-weight:700;font-size:1.7rem;letter-spacing:.02em;margin:0;text-transform:uppercase;text-wrap:balance}
+header p{margin:4px 0 0;color:var(--mute);font-size:.88rem}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.classes{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.cls{background:var(--panel);border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:10px 6px;cursor:pointer;
+  font-family:var(--display);font-weight:600;font-size:.85rem;text-transform:uppercase;letter-spacing:.04em;display:flex;flex-direction:column;align-items:center;gap:4px}
+.cls svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+.cls[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.cls:focus-visible,.chip:focus-visible,.w:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.brief{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.brief div{min-width:0}
+.brief b{display:block;font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:500}
+.brief span{font-weight:600}
+.brief small{display:block;color:var(--mute);font-size:.8rem}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tools input{flex:1 1 180px;min-width:0;background:var(--panel);border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:9px 12px;font:inherit}
+.chip{background:transparent;border:1px solid var(--line);color:var(--fg);border-radius:999px;padding:7px 12px;font:500 .82rem var(--body);cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+.mode{font-size:.82rem;color:var(--mute)}
+.group h2{font-family:var(--display);font-size:1rem;text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px;display:flex;gap:8px;align-items:baseline}
+.group h2 .n{font-family:var(--mono);font-size:.75rem;color:var(--mute);font-weight:500}
+.group h2 .sigtag{font-family:var(--mono);font-size:.66rem;color:var(--sig);border:1px solid var(--sig);border-radius:3px;padding:1px 5px;letter-spacing:.08em}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px}
+.w{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px;text-align:left;color:var(--fg);cursor:pointer;font:inherit;display:flex;justify-content:space-between;gap:8px;align-items:center;min-width:0}
+.w .nm{font-family:var(--display);font-weight:600;font-size:.98rem;letter-spacing:.02em}
+.w .sub{display:block;font-size:.74rem;color:var(--mute)}
+.w.sel{border-color:var(--accent)}
+.badges{display:flex;gap:4px;flex-shrink:0}
+.b{font-family:var(--mono);font-size:.66rem;padding:2px 5px;border-radius:3px;border:1px solid var(--line);color:var(--mute)}
+.b.s5{color:var(--new);border-color:var(--new)}
+.b.soon{color:var(--soon);border-color:var(--soon)}
+.b.t-S{color:var(--accent);border-color:var(--accent)}
+.empty{color:var(--mute);padding:20px 0}
+.detail{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:2px solid var(--accent);
+  padding:14px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  box-shadow:0 -10px 30px rgba(0,0,0,.35);z-index:20}
+.detail .in{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:6px}
+.detail .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.detail h3{margin:0;font-family:var(--display);font-size:1.3rem;text-transform:uppercase}
+.detail p{margin:0;max-width:65ch}
+.detail .meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem;color:var(--mute)}
+.detail .meta b{color:var(--fg);font-weight:600}
+.x{background:none;border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:4px 10px;cursor:pointer;font:inherit}
+footer{color:var(--mute);font-size:.76rem}
+.views{display:flex;gap:0;border:1px solid var(--line);border-radius:6px;overflow:hidden;align-self:flex-start}
+.views button{background:var(--panel);color:var(--mute);border:0;padding:8px 16px;font:600 .85rem var(--display);text-transform:uppercase;letter-spacing:.05em;cursor:pointer}
+.views button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.detail{max-height:72vh;overflow-y:auto}
+.build{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:4px}
+.slot{border:1px solid var(--line);border-radius:5px;padding:6px 8px;min-width:0}
+.slot b{display:block;font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:500}
+.slot span{font-weight:600;font-size:.88rem}
+.slot.off span{color:var(--mute);font-weight:400}
+.pts{font-family:var(--mono);font-size:.8rem}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:3px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.acc{display:flex;flex-direction:column;gap:16px}
+.rule{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.rule div{min-width:0}.rule b{display:block;font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:500}
+.rule span{font-family:var(--display);font-weight:700;font-size:1.3rem}
+.rule small{display:block;color:var(--mute);font-size:.8rem}
+.slotcard{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.slotcard h2{font-family:var(--display);font-size:1rem;text-transform:uppercase;letter-spacing:.06em;margin:0 0 2px}
+.slotcard>p{margin:0 0 8px;color:var(--mute);font-size:.85rem}
+.opt{display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:4px 12px;padding:6px 0;border-top:1px solid var(--line);font-size:.88rem}
+.opt b{font-weight:600}.opt span{color:var(--mute);min-width:0}
+.opt em{font-style:normal;font-family:var(--mono);font-size:.72rem;color:var(--accent);margin-left:6px}
+@media (max-width:560px){.rule{grid-template-columns:1fr}.opt{grid-template-columns:1fr}}
+:root{--gun:#c9d2ce;--grid:rgba(242,169,34,.07)}
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){--gun:#2b3532;--grid:rgba(184,120,10,.09)}}
+:root[data-theme="light"]{--gun:#2b3532;--grid:rgba(184,120,10,.09)}
+.list{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.w{flex-direction:column;align-items:stretch;padding:0;overflow:hidden;gap:0}
+.w .art{display:block;background:
+  linear-gradient(var(--grid) 1px,transparent 1px) 0 0/12px 12px,
+  linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/12px 12px;border-bottom:1px solid var(--line);padding:8px 10px}
+.w .art svg{display:block;width:100%;height:64px}
+.w .row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px 10px}
+.w:hover .art{background-color:color-mix(in srgb,var(--accent) 6%,transparent)}
+.gun{color:var(--gun)}
+.gun .lens{fill:var(--accent);opacity:.85}
+.gun .mk circle{fill:var(--accent);stroke:var(--panel);stroke-width:2}
+.gun .mk text{fill:var(--accent-ink);font:700 9px var(--mono);text-anchor:middle;dominant-baseline:central}
+.gun .mk.dim circle{fill:var(--line)} .gun .mk.dim text{fill:var(--mute)}
+.hero{background:
+  linear-gradient(var(--grid) 1px,transparent 1px) 0 0/14px 14px,
+  linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/14px 14px;border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.hero svg{display:block;width:100%;max-height:150px}
+.slot b i{font-style:normal;display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;background:var(--accent);color:var(--accent-ink);margin-right:5px;font-size:.6rem}
+.slot.off b i{background:var(--line);color:var(--mute)}
+.slotcard .mini{float:right;width:150px;margin:0 0 6px 10px}
+.slotcard .mini svg{display:block;width:100%;height:auto}
+@media (max-width:560px){.slotcard .mini{float:none;width:100%;max-width:240px;margin:0 0 8px}}
+@media (max-width:560px){
+  .classes{grid-template-columns:repeat(5,1fr)} .cls{font-size:.66rem;padding:8px 2px}
+  .brief{grid-template-columns:1fr} .list{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:no-preference){ .w{transition:border-color .15s} .detail{animation:up .18s ease-out} @keyframes up{from{transform:translateY(12px)}to{transform:none}} }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Saison 5 · Siege of Vegas · MAJ 2.1.1.0</div>
+    <h1>Arsenal par classe</h1>
+    <p>Choisis une classe, filtre et touche une arme pour voir sa fiche.</p>
+  </header>
+
+  <div class="views" role="group" aria-label="Vue">
+    <button id="vArmes" aria-pressed="true">Armes</button>
+    <button id="vAcc" aria-pressed="false">Accessoires</button>
+  </div>
+
+  <section class="acc" id="accView" hidden></section>
+
+  <div id="armView" style="display:flex;flex-direction:column;gap:18px">
+  <nav class="classes" id="classes" aria-label="Classes"></nav>
+  <section class="brief" id="brief" aria-live="polite"></section>
+
+  <div class="tools">
+    <input id="q" type="search" placeholder="Rechercher une arme…" aria-label="Rechercher une arme">
+    <button class="chip" id="fNew" aria-pressed="false">Nouveautés S5</button>
+    <button class="chip" id="fMode" aria-pressed="false">Armes fermées</button>
+  </div>
+  <div class="mode" id="modeTxt"></div>
+
+  <main id="out" style="display:flex;flex-direction:column;gap:20px"></main>
+  </div>
+
+  <footer>Données compilées depuis les notes de saison EA et la presse spécialisée (oct. 2026). Les tiers reflètent un classement communautaire récent et évoluent avec chaque patch. Les armes « à venir » arrivent aux phases 2 et 3 de la saison.</footer>
+</div>
+
+<aside class="detail" id="detail" hidden></aside>
+
+<script>
+const ICONS={
+ assault:'<svg viewBox="0 0 24 24"><path d="M12 3v18M7 8l5-5 5 5"/></svg>',
+ engineer:'<svg viewBox="0 0 24 24"><path d="M14 6a4 4 0 0 0-5 5l-6 6 3 3 6-6a4 4 0 0 0 5-5l-2 2-3-3z"/></svg>',
+ support:'<svg viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M9 7V4h6v3M12 10v7M8.5 13.5h7"/></svg>',
+ recon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/></svg>',
+ all:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/></svg>'
+};
+const CLASSES=[
+ {id:'assault',nm:'Assaut',cat:'AR',gadget:'Injecteur d’adrénaline',trait:'Mission Focused',perk:'Fusils d’assaut',hint:'Rush, prise d’objectif, régénération plus rapide.'},
+ {id:'engineer',nm:'Ingénieur',cat:'SMG',gadget:'Outil de réparation',trait:'Mechanized Infantry',perk:'PM : meilleur contrôle hanche',hint:'Anti-véhicule, seul à réparer les véhicules alliés.'},
+ {id:'support',nm:'Soutien',cat:'LMG',gadget:'Sac de ravitaillement',trait:'Field Sustainment',perk:'FM : pas de malus de sprint',hint:'Soins, munitions, réanimations plus rapides.'},
+ {id:'recon',nm:'Éclaireur',cat:'SNI',gadget:'Détecteur de mouvement',trait:'Auto-spot',perk:'Fusils de précision',hint:'Repérage ; un headshot empêche la réanimation.'},
+ {id:'all',nm:'Toutes',cat:null,gadget:'—',trait:'—',perk:'Carabines, DMR, fusils à pompe, armes de poing',hint:'Catégories ouvertes à toutes les classes.'}
+];
+const CATS={AR:'Fusils d’assaut',SMG:'Pistolets-mitrailleurs',LMG:'Fusils-mitrailleurs',SNI:'Fusils de précision',CAR:'Carabines',DMR:'Fusils de tireur d’élite (DMR)',SG:'Fusils à pompe',PI:'Armes de poing'};
+const SIG={AR:'assault',SMG:'engineer',LMG:'support',SNI:'recon'};
+// [nom, cat, saison, déblocage, tier, description]
+const W=[
+ ['M433','AR','Lancement','Par défaut','A','Polyvalent et facile à prendre en main, idéal pour débuter.'],
+ ['NVO-228E','AR','Lancement','Progression','A','7,62 mm, solide à moyenne portée.'],
+ ['B36A4','AR','Lancement','Progression','A','Modulable, à l’aise de près comme à distance.'],
+ ['AK4D','AR','Lancement','Progression','A','Cadence lente, à privilégier à moyenne/longue portée.'],
+ ['KORD 6P67','AR','Lancement','Progression','S','Recul faible et cadence élevée ; référence actuelle de la catégorie.'],
+ ['L85A3','AR','Lancement','Progression','A','Bullpup à cadence régulière, orienté moyenne/longue portée.'],
+ ['SOR-556 MK2','AR','Lancement','Progression','A','Fusil 5,56 équilibré.'],
+ ['TR-7','AR','Lancement','Progression','C','Le moins bien classé de la catégorie.'],
+ ['VCR-2','AR','Saison 2','Passe de combat S2','A','Ajouté avec Extreme Measures.'],
+ ['M16A4','AR','Saison 3','Passe de combat S3','A','Retour d’un classique de la série.'],
+ ['EF88','AR','Saison 4','Passe S4 (rattrapage)','A','Bullpup précis pour la moyenne/longue portée.'],
+ ['Mk 24','AR','Saison 5','Passe de combat S5','new','Moins de munitions par chargeur mais dégâts élevés et constants à distance.'],
+
+ ['SGX','SMG','Lancement','Par défaut','A','PM de départ, efficace en combat rapproché.'],
+ ['PW5A3','SMG','Lancement','Rang 6','S','Le PM le plus fort du méta actuel, jusqu’à moyenne portée.'],
+ ['PW7A2','SMG','Lancement','Rang 19','B','PDW compacte et mobile.'],
+ ['UMG-40','SMG','Lancement','Rang 29','A','Polymère en .40, cadence basse.'],
+ ['USG-90','SMG','Lancement','Rang 36','C','Le moins performant de la catégorie.'],
+ ['KV9','SMG','Lancement','Rang 45','B','Cadence très élevée qui vide le chargeur en un instant.'],
+ ['SCW-10','SMG','Lancement','Maîtrise Close Quarters 1','A','10 mm, plus de puissance d’arrêt que les autres PDW.'],
+ ['SL9','SMG','Lancement','Maîtrise Close Quarters 2','B','Design atypique, adaptable.'],
+ ['CZ3A1','SMG','Saison 2','Passe de combat S2','',''],
+ ['PP-19','SMG','Saison 3','Mi-saison S3','',''],
+ ['RSPR','SMG','Saison 5','Passe de combat S5','new','PDW au comportement de fusil : cadence régulière et gros dégâts. Pour les rushs.'],
+
+ ['L110','LMG','Lancement','Par défaut','A','Arme d’appui 5,56 polyvalente.'],
+ ['DRS-IAR','LMG','Lancement','Rang 9','S','Le FM le plus régulier du moment.'],
+ ['M/60','LMG','Lancement','Rang 20','C','Gros calibre, cadence lente.'],
+ ['RPKM','LMG','Lancement','Rang 30','B','L’arme d’appui légère d’origine.'],
+ ['M123K','LMG','Lancement','Rang 38','B','Pensé pour un appui mobile.'],
+ ['M250','LMG','Lancement','Rang 46','B','Très précis, mais le plus lent à tirer.'],
+ ['KTS100 MK8','LMG','Lancement','Maîtrise Bullet Storm 1','S','Parmi les meilleures armes du jeu.'],
+ ['M240L','LMG','Lancement','Maîtrise Bullet Storm 2','C',''],
+ ['M121 A2','LMG','Saison 2','Passe de combat S2','',''],
+ ['RPK-74M','LMG','Saison 3','Passe de combat S3','S','Meilleure arme ajoutée en saison 3.'],
+ ['Z84M','LMG','Saison 5','Passe de combat S5','new','Pour le tir soutenu et la tenue de positions.'],
+
+ ['M2010 ESR','SNI','Lancement','Progression','S','Le sniper de référence.'],
+ ['SV-98','SNI','Lancement','Progression','A',''],
+ ['PSR','SNI','Lancement','Progression','A',''],
+ ['Mini Scout','SNI','Saison 1','Défis S1','','Verrou léger pour un éclaireur agressif et mobile.'],
+ ['L115','SNI','Saison 3','Passe de combat S3','','Verrou longue portée.'],
+ ['Interdictor','SNI','Saison 4','Défi de rattrapage S4','',''],
+ ['ELR-40','SNI','Saison 5','Passe de combat S5','new','Verrou longue portée, taillé pour les grandes lignes de vue d’Area 51.'],
+
+ ['M4A1','CAR','Lancement','Progression','S','Cadence élevée, idéale pour les assauts d’objectif.'],
+ ['AK-205','CAR','Lancement','Niveau 22','C','5,45 mm, bonne tenue à distance.'],
+ ['M417 A2','CAR','Lancement','Progression','','Carabine 7,62 : gros dégâts, cadence posée.'],
+ ['QBZ-192','CAR','Lancement','Progression','A','Calibre 5,8 mm.'],
+ ['SG 553R','CAR','Lancement','Progression','S','Très forte, ciblée par les débats d’équilibrage.'],
+ ['M277','CAR','Lancement','Progression','B',''],
+ ['GRT-BC','CAR','Lancement','Progression','',''],
+ ['SOR-300SC','CAR','Saison 1','Défis S1','A','.300 Blackout : frappe plus fort, cadence plus lente.'],
+ ['BROD 3','CAR','Saison 4','Défi de rattrapage S4','A','Agressive et polyvalente.'],
+ ['NSW4','CAR','Saison 5','Phase 2 · 10 nov.','soon','Arrive avec Casino Heist.'],
+
+ ['M39 EMR','DMR','Lancement','Rang 4','A','DMR par défaut, fiable.'],
+ ['LMR27','DMR','Lancement','Rang 16','C',''],
+ ['SVK-8.6','DMR','Lancement','Rang 33','B',''],
+ ['SVDM','DMR','Lancement','Maîtrise Deadeye 1','S','Le meilleur DMR actuel.'],
+ ['GRT-CPS','DMR','Saison 2','Passe de combat S2','',''],
+ ['VSSM','DMR','Saison 4','Défi de rattrapage S4','','Silencieux intégré, munitions subsoniques, mode automatique.'],
+
+ ['M87A1','SG','Lancement','Progression','S','Puissance de feu redoutable au contact.'],
+ ['M1014','SG','Lancement','Progression','A','Semi-automatique.'],
+ ['18.5KS-K','SG','Lancement','Progression','',''],
+ ['DB-12','SG','Saison 1','Défis S1','','Double tube : deux tirs avant de pomper.'],
+
+ ['P18','PI','Lancement','Par défaut','B',''],
+ ['ES 5.7','PI','Lancement','Progression','A',''],
+ ['M45A1','PI','Lancement','Progression','C',''],
+ ['M44','PI','Lancement','Progression','S','Revolver puissant.'],
+ ['M357 Trait','PI','Saison 1','Défis S1','S','Revolver.'],
+ ['GGH-22','PI','Saison 1','Défis S1','','Cadence rapide et grande capacité, dégâts modestes.'],
+ ['VZ.61','PI','Saison 2','Passe de combat S2','',''],
+ ['MK 1 MOD 8','PI','Saison 5','Phase 3 · 8 déc.','soon','Annoncée pour Frozen Aces ; catégorie non confirmée.']
+].map(a=>({nm:a[0],cat:a[1],s:a[2],un:a[3],t:a[4],d:a[5]}));
+
+// Silhouettes originales par catégorie (viewBox 240x80) + points d'ancrage des emplacements
+// ordre des ancres : bouche, canon, sous-canon, chargeur, munitions, optique, laser, ergonomie
+const GUNS={
+ AR:{d:`<polygon points="6,32 50,27 50,45 14,55 6,55"/><rect x="50" y="25" width="74" height="19" rx="2"/><rect x="124" y="27" width="56" height="14" rx="2"/><rect x="180" y="31" width="34" height="5"/><rect x="214" y="29" width="12" height="9" rx="1"/><polygon points="78,44 91,44 85,64 72,64"/><polygon points="98,44 113,44 121,68 106,70"/><rect x="148" y="41" width="7" height="13" rx="1"/><rect x="82" y="21" width="12" height="4"/><rect x="72" y="13" width="32" height="9" rx="3"/><rect class="lens" x="100" y="14" width="4" height="7"/>`,
+  a:[[220,33],[196,33],[151,58],[113,60],[96,52],[88,9],[160,34],[62,34]]},
+ CAR:{d:`<polygon points="18,32 50,28 50,44 22,51 18,51"/><rect x="50" y="25" width="74" height="19" rx="2"/><rect x="124" y="27" width="40" height="14" rx="2"/><rect x="164" y="31" width="26" height="5"/><rect x="190" y="29" width="11" height="9" rx="1"/><polygon points="78,44 91,44 85,64 72,64"/><polygon points="98,44 113,44 121,68 106,70"/><rect x="140" y="41" width="7" height="13" rx="1"/><rect x="82" y="21" width="12" height="4"/><rect x="74" y="14" width="26" height="8" rx="3"/><rect class="lens" x="96" y="15" width="4" height="6"/>`,
+  a:[[196,33],[177,33],[143,58],[113,60],[96,52],[87,10],[150,34],[62,34]]},
+ SMG:{d:`<rect x="22" y="30" width="38" height="4"/><rect x="22" y="30" width="5" height="18"/><rect x="22" y="44" width="38" height="4"/><rect x="60" y="24" width="62" height="20" rx="3"/><rect x="122" y="30" width="28" height="6"/><rect x="150" y="28" width="14" height="10" rx="1"/><polygon points="76,44 88,44 84,62 72,62"/><rect x="96" y="44" width="12" height="30" rx="1"/><rect x="112" y="44" width="7" height="12" rx="1"/><rect x="84" y="21" width="8" height="3"/><rect x="78" y="14" width="20" height="8" rx="3"/><rect class="lens" x="94" y="15" width="4" height="6"/>`,
+  a:[[157,33],[136,33],[124,56],[102,64],[90,56],[88,9],[136,23],[70,34]]},
+ LMG:{d:`<polygon points="6,30 48,26 48,46 10,54 6,54"/><rect x="48" y="22" width="84" height="24" rx="2"/><rect x="132" y="26" width="52" height="16" rx="2"/><rect x="184" y="31" width="40" height="5"/><rect x="224" y="29" width="12" height="9" rx="1"/><polygon points="76,46 89,46 83,64 70,64"/><rect x="96" y="46" width="30" height="22" rx="3"/><polygon points="198,36 202,36 194,68 190,68"/><polygon points="200,36 204,36 212,68 208,68"/><rect x="78" y="18" width="10" height="4"/><rect x="66" y="10" width="36" height="9" rx="3"/><rect class="lens" x="98" y="11" width="4" height="7"/>`,
+  a:[[230,33],[178,22],[201,72],[111,57],[136,56],[84,6],[158,34],[60,34]]},
+ DMR:{d:`<polygon points="6,30 50,26 50,44 18,54 6,54"/><rect x="50" y="25" width="70" height="18" rx="2"/><rect x="120" y="27" width="64" height="13" rx="2"/><rect x="184" y="31" width="36" height="4"/><rect x="220" y="29" width="12" height="8" rx="1"/><polygon points="78,43 90,43 84,62 72,62"/><polygon points="98,43 112,43 114,58 100,58"/><rect x="150" y="40" width="7" height="11" rx="1"/><rect x="74" y="20" width="6" height="5"/><rect x="98" y="20" width="6" height="5"/><rect x="64" y="11" width="50" height="10" rx="4"/><rect class="lens" x="109" y="12" width="5" height="8"/>`,
+  a:[[226,33],[202,33],[153,56],[106,52],[120,58],[89,6],[150,22],[62,33]]},
+ SNI:{d:`<polygon points="4,28 60,26 60,44 40,44 30,56 4,56"/><rect x="60" y="26" width="60" height="16" rx="2"/><rect x="120" y="28" width="50" height="12" rx="2"/><rect x="170" y="31" width="60" height="4"/><rect x="228" y="29" width="10" height="8" rx="1"/><polygon points="58,42 70,42 66,60 54,60"/><rect x="102" y="42" width="12" height="10" rx="1"/><rect x="92" y="40" width="4" height="10"/><circle cx="94" cy="52" r="3"/><polygon points="160,40 164,40 156,68 152,68"/><polygon points="162,40 166,40 174,68 170,68"/><rect x="78" y="22" width="6" height="4"/><rect x="110" y="22" width="6" height="4"/><rect x="66" y="10" width="62" height="12" rx="5"/><rect class="lens" x="122" y="11" width="6" height="10"/>`,
+  a:[[233,33],[200,33],[163,72],[108,58],[120,52],[97,5],[145,22],[86,58]]},
+ SG:{d:`<polygon points="6,32 50,28 50,44 14,54 6,54"/><rect x="50" y="26" width="58" height="17" rx="2"/><rect x="108" y="27" width="104" height="6"/><rect x="108" y="34" width="90" height="6"/><rect x="138" y="32" width="40" height="12" rx="3"/><rect x="209" y="24" width="3" height="3"/><polygon points="72,43 84,43 78,62 66,62"/><rect x="74" y="22" width="8" height="4"/><rect x="66" y="15" width="24" height="8" rx="3"/><rect class="lens" x="86" y="16" width="4" height="6"/>`,
+  a:[[212,30],[192,22],[158,52],[190,46],[100,52],[78,8],[150,22],[60,34]]},
+ PI:{d:`<rect x="60" y="24" width="100" height="16" rx="3"/><rect x="64" y="38" width="92" height="8"/><polygon points="64,40 92,40 86,72 56,72"/><rect x="160" y="27" width="8" height="10" rx="1"/><rect x="104" y="20" width="8" height="4"/><rect x="98" y="15" width="20" height="7" rx="2"/><rect class="lens" x="114" y="16" width="4" height="5"/><rect x="118" y="46" width="24" height="8" rx="2"/>`,
+  a:[[170,32],[142,31],[150,64],[72,64],[96,58],[108,9],[130,62],[80,32]]}
+};
+function gunSvg(cat,marks){
+  const g=GUNS[cat]||GUNS.AR;
+  let m='';
+  if(marks) m=marks.map(([i,on])=>{const [x,y]=g.a[i];return `<g class="mk${on?'':' dim'}"><circle cx="${x}" cy="${y}" r="7"/><text x="${x}" y="${y}">${i+1}</text></g>`}).join('');
+  return `<svg class="gun" viewBox="-4 -4 248 84" fill="currentColor" role="img" aria-label="Silhouette ${CATS[cat]}">${g.d}${m}</svg>`;
+}
+// Build conseillé : [bouche, canon, sous-canon, chargeur, munitions, optique, laser/lampe, ergonomie, points]
+const SLOTS=['Bouche','Canon','Sous-canon','Chargeur','Munitions','Optique','Laser / lampe','Ergonomie'];
+const B={
+ 'SOR-556 MK2':['Standard Suppressor','Extended 18"','6H64 Vertical','36 RND','Standard','Au choix','50MW Violet','',100],
+ 'TR-7':['Standard Suppressor','Light 432MM','','25 Fast','Standard','1.25x','50MW Violet','',100],
+ 'KORD 6P67':['Long Suppressor','Heavy 415MM','Stippled Stubby','30 RND','Standard','2.0x ou 3.0x','50MW Violet','',100],
+ 'VCR-2':['Long Suppressor','Extended 20"','Ribbed Stubby','30 RND','Standard','Au choix','50MW Violet','',100],
+ 'M433':['Lightened Suppressor','Extended 18.9"','Ribbed Stubby','30 Fast','Standard','Au choix','50MW Violet','',100],
+ 'B36A4':['Lightened Suppressor','510MM Fluted','6H64 Vertical','30 Fast','Standard','Au choix','50MW Violet','Buffer',100],
+ 'NVO-228E':['Long Suppressor','458MM Custom','6H64 Vertical','30 Fast','Standard','Au choix','50MW Violet','',100],
+ 'M16A4':['Long Suppressor','20" Factory','Ribbed Stubby','30 RND','Standard','Au choix','50MW Violet','',100],
+ 'EF88':['Standard Suppressor','20" Marksman','6H64 Vertical','30 RND','Standard','Au choix','50MW Violet','',100],
+ 'Mk 24':['Lightened Suppressor','Basic 16"','Ribbed Stubby','20 RND','Standard','Au choix','50MW Violet','',100],
+ 'AK4D':['CQB Suppressor','Heavy Ext 600MM','6H64 Vertical','20 Fast','Standard','2.5x ou 3.0x','50MW Violet','',100],
+ 'L85A3':['Long Suppressor','Heavy Ext 646MM','Ribbed Stubby','30 RND','Standard','Au choix','50MW Violet','',100],
+ 'PW5A3':['CQB Suppressor','Extended 245MM','Folding Stubby','30 Fast','Standard','1.25x','5MW Green','',100],
+ 'SL9':['Standard Suppressor','Extended 11"','6H64 Vertical','30 RND','Standard','1.25x','120MW Blue','',100],
+ 'SGX':['CQB Suppressor','Extended 8"','Ribbed Vertical','30 RND','Standard','1.25x','5MW Green','',95],
+ 'PW7A2':['Lightened Suppressor','Heavy 180MM','Slim Angled','30 Fast','Standard','1.25x','5MW Red','Mag Catch',100],
+ 'UMG-40':['CQB Suppressor','Extended 305MM','6H64 Vertical','30 RND','Hollow Point','1.5x ou 2.0x','','',100],
+ 'USG-90':['CQB Suppressor','Heavy Ext 407MM','','50 RND','Hollow Point','1.5x ou 2.0x','120MW Blue','',100],
+ 'CZ3A1':['CQB Suppressor','Extended 16.2"','6H64 Vertical','30 RND','Standard','Au choix','5MW Red','',100],
+ 'PP-19':['CQB Suppressor','238MM Pencil','Alloy Vertical','30 RND','Standard','Au choix','5MW Green','',100],
+ 'RSPR':['CQB Suppressor','Light 7.75"','Alloy Vertical','20 RND','Standard','1.0x ou 1.25x','5MW Green','',100],
+ 'KV9':['Standard Suppressor','Basic 5.5"','Ribbed Stubby','23 RND','Standard','1.25x','','',100],
+ 'SCW-10':['Standard Suppressor','Extended 200MM','Folding Vertical','20 RND','Standard','1.25x','50MW Blue','',100],
+ 'Mini Scout':['Long Suppressor','Extended 18"','','10 Fast','Standard','6.0x+ · Anti-Glare','50MW Violet + Range Finder','',100],
+ 'M2010 ESR':['','Extended 26"','','5 Fast','Long-Range','6.0x+ · Anti-Glare','Range Finder','DLC Bolt',100],
+ 'SV-98':['','Extended 730MM','','5 RND','Long-Range','6.0x+ · Anti-Glare','Range Finder','ADS Bolt',95],
+ 'PSR':['','Extended 27"','','7 RND','Long-Range','8.0x+ · Anti-Glare','Range Finder','ADS Bolt',95],
+ 'L115':['Lightened Suppressor','32" Custom','','5 RND','Standard','6.0x+ · Anti-Glare','','ADS Bolt',100],
+ 'ELR-40':['Long Suppressor','Light 29"','Slim Angled','Single Shot','Standard','6.0x+ · Anti-Glare','50MW Violet','',100],
+ 'Interdictor':['Long Suppressor','Extended','Slim Angled','5 RND','Standard','6.0x+ · Anti-Glare','50MW Violet + Range Finder','',100],
+ 'DRS-IAR':['Long Suppressor','Heavy Ext 20"','Ribbed Stubby','30 Fast','Standard','3.0x ou 4.0x','50MW Violet','',100],
+ 'M250':['Long Suppressor','Heavy Ext 556MM','Stippled Stubby','50 RND','Standard','3.0x ou 4.0x','50MW Violet','',100],
+ 'M121 A2':['Long Suppressor','Heavy Ext 660MM','Stippled Stubby','50 RND','Standard','Au choix','50MW Violet','',100],
+ 'L110':['Long Suppressor','Light 349MM','Classic Grip Pod','','Standard','2.0x ou 3.0x','50MW Violet','',100],
+ 'M/60':['Long Suppressor','Heavy Ext 22"','Stippled Stubby','50 RND','Standard','2.0x ou 3.0x','50MW Violet','',100],
+ 'RPKM':['Standard Suppressor','Extended 600MM','Canted Stubby','40 Fast','Standard','1.75x ou 2.5x','50MW Violet','',100],
+ 'M123K':['Long Suppressor','Heavy Ext 612MM','Stippled Stubby','100 RND','Standard','2.5x ou 3.0x','50MW Violet','',100],
+ 'KTS100 MK8':['Long Suppressor','Heavy Ext 508MM','Stippled Stubby','60 RND','Standard','2.5x ou 3.0x','50MW Violet','',100],
+ 'RPK-74M':['Lightened Suppressor','590MM Factory','Ribbed Stubby','45 RND','Standard','2.0x ou 2.5x','50MW Violet','',100],
+ 'Z84M':['Standard Suppressor','Light 605MM','Slim Angled','100 Fast','Standard','Au choix','50MW Violet','',100],
+ 'M240L':['Long Suppressor','Heavy Ext 24"','Classic Grip Pod','75 RND','Standard','2.5x ou 3.0x','50MW Violet','',100],
+ 'P18':['Standard Suppressor','Basic 3.9"','','17 RND','Standard','1.25x','5MW Green','',60,60],
+ 'ES 5.7':['Standard Suppressor','Basic 122MM','','20 RND','Standard','1.25x','5MW Green','',60,60],
+ 'M45A1':['Standard Suppressor','Basic 5"','','7 RND','Standard','1.25x','5MW Green','',60,60],
+ 'M44':['','Extended 8.37"','','6 RND','Hollow Point','Au choix','','',50,60],
+ 'GGH-22':['Standard Suppressor','Basic 114MM','','15 RND','Standard','1.25x','5MW Green','',60,60],
+ 'M357 Trait':['','Basic 5"','','8 Fast','Hollow Point','1.25x','5MW Green','',60,60],
+ 'VZ.61':['','Basic 115MM','','20 RND','Standard','Basic Sight','','',60,60],
+ 'SVK-8.6':['Long Suppressor','Extended 560MM','6H64 Vertical','10 RND','Long-Range','4.0x+','50MW Violet','',100],
+ 'M39 EMR':['Hybrid Suppressor (L)','Extended 22"','Stippled Stubby','20 RND','Standard','4.0x+','50MW Violet','',100],
+ 'GRT-CPS':['Lightened Suppressor','Extended 20"','Folding Stubby','20 Fast','Standard','3.0x+','50MW Violet','',100],
+ 'VSSM':['','200M Factory','Ribbed Stubby','20 Fast','Tungsten Match','3.0x+','50MW Violet','',100],
+ 'SVDM':['Standard Suppressor','Extended 620MM','Stippled Stubby','10 RND','Standard','4.0x+','50MW Violet','',100],
+ 'LMR27':['Standard Suppressor','Extended 24"','Stippled Stubby','10 RND','Standard','4.0x+','50MW Violet','',100],
+ 'M4A1':['Standard Suppressor','12.5" Fluted','Ribbed Vertical','30 Fast','Standard','1.25x','50MW Violet','',100],
+ 'SG 553R':['Standard Suppressor','Extended 303MM','Stippled Stubby','30 RND','Standard','2.0x ou 3.0x','50MW Violet','',100],
+ 'M277':['Lightened Suppressor','Extended 16"','6H64 Vertical','20 RND','Standard','Au choix','50MW Violet','',100],
+ 'M417 A2':['Standard Suppressor','Extended 16.5"','Ribbed Stubby','20 Fast','Standard','Au choix','50MW Violet','',100],
+ 'QBZ-192':['Standard Suppressor','Extended 14.5"','6H64 Vertical','36 RND','Standard','Au choix','50MW Violet','',100],
+ 'SOR-300SC':['Standard Suppressor','Extended 10.5"','Full Angled','36 RND','Standard','2.0x ou 3.0x','50MW Violet','',100],
+ 'BROD 3':['Standard Suppressor','11" Pencil','Ribbed Stubby','30 RND','Standard','Au choix','50MW Violet','',100],
+ 'AK-205':['Standard Suppressor','Heavy 314MM','6H64 Vertical','30 Fast','Hollow Point','1.5x ou 2.0x','50MW Violet','',100],
+ 'GRT-BC':['Standard Suppressor','Extended 14.5"','6H64 Vertical','36 RND','Standard','Au choix','50MW Violet','',100],
+ 'M87A1':['','Basic 20"','Slim Angled','7 RND','Buckshot','Au choix','120MW Blue + Flashlight','',90],
+ 'M1014':['','Basic 18.5"','Alloy Vertical','6 RND','Buckshot','Au choix','120MW Blue + Flashlight','',95],
+ 'DB-12':['CQB Suppressor','18.9" Factory','Ribbed Stubby','14 RND','Buckshot','','5MW Green','',95],
+ '18.5KS-K':['','Extended 430MM','','8 Fast','Slugs','Au choix','50MW Blue','',95]
+};
+// Catalogue des accessoires par emplacement
+const ACC=[
+ {s:'Bouche',p:'Silencieux et freins de bouche. Un silencieux évite d’apparaître sur la mini-carte quand tu tires.',o:[
+  ['Standard Suppressor','Silencieux polyvalent, le plus utilisé sur les builds.'],
+  ['Lightened Suppressor','Silencieux allégé, pénalise moins la maniabilité.'],
+  ['Long Suppressor','Silencieux long, aide à maîtriser le recul. Prisé sur fusils d’assaut, FM et snipers.'],
+  ['CQB Suppressor','Silencieux court pour le combat rapproché (PM, fusils à pompe).'],
+  ['Hybrid Suppressor (L)','Variante hybride, vue sur le M39 EMR.'],
+  ['Compensated Brake','Frein de bouche qui supprime la montée verticale.','30 pts'],
+  ['Double-Port Brake','Frein de bouche, débloqué via la maîtrise (ex. M433 niv. 20).']]},
+ {s:'Canon',p:'Le canon joue sur la vélocité des balles, la portée et la maniabilité. Les longueurs exactes changent selon l’arme.',o:[
+  ['Basic','Canon d’origine.'],
+  ['Light','Plus léger : meilleure maniabilité, un peu moins de portée.'],
+  ['Heavy / Heavy Ext','Plus lourd : stabilité et portée, au prix de la maniabilité.'],
+  ['Extended','Rallongé : meilleure vélocité des balles.','≈30 pts'],
+  ['Fluted','Cannelé : gagne en maniabilité sans perdre de vélocité.','≈25 pts'],
+  ['Factory / Custom / Marksman / Pencil','Variantes propres à certaines armes (Marksman pour la distance, Pencil pour l’agilité).']]},
+ {s:'Sous-canon',p:'Poignées et bipieds pour le recul et la vitesse de visée.',o:[
+  ['Vertical (6H64, Ribbed, Alloy, Folding)','Réduisent surtout le recul vertical.','≈20 pts'],
+  ['Stubby (Stippled, Ribbed, Folding, Canted)','Poignées courtes, bon compromis stabilité/maniabilité.'],
+  ['Angled (Slim, Full)','Poignées inclinées : visée plus rapide.','≈20 pts'],
+  ['Compact Handstop','Permet de tirer en sprintant.','25 pts'],
+  ['Classic Grip Pod','Poignée-bipied pour les FM (L110, M240L).']]},
+ {s:'Chargeur',p:'Capacité et vitesse de rechargement. Les tailles dépendent de l’arme.',o:[
+  ['Standard','Chargeur d’origine.'],
+  ['Fast (ex. 30 Fast)','Rechargement plus rapide.'],
+  ['Grande capacité (36, 50, 75, 100 RND)','Plus de balles avant de recharger.','≈15 pts'],
+  ['Single Shot','Coup par coup (ELR-40).']]},
+ {s:'Munitions',p:'Change le comportement des balles.',o:[
+  ['Standard','Munitions de base.'],
+  ['Hollow Point','Expansives, efficaces de près contre l’infanterie.'],
+  ['Long-Range','Pour les tirs à longue distance (snipers, DMR).'],
+  ['Tungsten Match','Munitions de précision, vues sur la VSSM.'],
+  ['Buckshot','Chevrotine pour fusils à pompe.'],
+  ['Slugs','Balle unique pour fusils à pompe : plus de portée.']]},
+ {s:'Optique',p:'Du point rouge (1.0x) à la lunette 8x. On peut ajouter des accessoires d’optique.',o:[
+  ['1.0x – 1.25x','Points rouges / reflex : combat rapproché.','10 pts'],
+  ['1.5x – 3.0x','Moyenne portée (fusils d’assaut, FM, carabines).'],
+  ['4.0x – 8.0x','Longue portée (DMR, snipers).','≈20 pts'],
+  ['Anti-Glare','Accessoire d’optique qui limite le reflet de la lunette.'],
+  ['1.25x (accessoire)','Viseur secondaire sur la lunette.']]},
+ {s:'Laser / lampe',p:'Montés en haut, à droite ou à gauche selon l’arme.',o:[
+  ['5MW Green / Red','Lasers faible puissance, très utilisés sur PM et pistolets.'],
+  ['50MW Violet / Blue','Le choix le plus fréquent sur fusils, FM et DMR.'],
+  ['120MW Blue','Laser puissant, surtout pour le tir à la hanche (fusils à pompe, PM).'],
+  ['Flashlight','Lampe qui éblouit en intérieur.'],
+  ['Range Finder','Télémètre : affiche la distance de la cible (snipers).']]},
+ {s:'Ergonomie',p:'Réglages internes, pas sur toutes les armes.',o:[
+  ['Buffer','Amortisseur, vu sur le B36A4.'],
+  ['DLC Bolt / ADS Bolt','Culasses pour fusils à verrou (snipers).'],
+  ['Mag Catch','Arrêtoir de chargeur, vu sur le PW7A2.']]}
+];
+
+let st={cls:'assault',q:'',onlyNew:false,closed:false,sel:null,view:'armes'};
+try{const v=localStorage.getItem('bf6cls'); if(v) st.cls=v}catch(e){}
+
+const $=s=>document.querySelector(s);
+function renderClasses(){
+  $('#classes').innerHTML=CLASSES.map(c=>`<button class="cls" id="c-${c.id}" data-id="${c.id}" aria-pressed="${st.cls===c.id}">${ICONS[c.id]}${c.nm}</button>`).join('');
+}
+function renderBrief(){
+  const c=CLASSES.find(x=>x.id===st.cls);
+  $('#brief').innerHTML=c.id==='all'
+   ?`<div><b>Accès</b><span>Toutes les classes</span><small>${c.perk}</small></div><div><b>Mode fermé</b><span>Disponibles quand même</span><small>Ces catégories restent ouvertes</small></div><div><b>Conseil</b><span>Complète ta classe</span><small>Une carabine dépanne partout</small></div>`
+   :`<div><b>Arme signature</b><span>${c.perk}</span><small>${c.hint}</small></div><div><b>Gadget signature</b><span>${c.gadget}</span></div><div><b>Trait</b><span>${c.trait}</span></div>`;
+}
+function visibleCats(){
+  if(st.cls==='all') return ['CAR','DMR','SG','PI'];
+  const c=CLASSES.find(x=>x.id===st.cls);
+  return st.closed?[c.cat,'CAR','DMR','SG','PI']:[c.cat,'CAR','DMR','SG','PI',...['AR','SMG','LMG','SNI'].filter(k=>k!==c.cat)];
+}
+function badge(w){
+  let h='';
+  if(w.t==='new') h+='<span class="b s5">S5</span>';
+  else if(w.t==='soon') h+='<span class="b soon">À venir</span>';
+  else if(w.t) h+=`<span class="b t-${w.t}">${w.t}</span>`;
+  return h;
+}
+function render(){
+  const q=st.q.trim().toLowerCase();
+  const c=CLASSES.find(x=>x.id===st.cls);
+  $('#modeTxt').textContent=st.cls==='all'?'':(st.closed
+    ?`Armes fermées : ${c.nm} ne peut utiliser que ses ${CATS[c.cat].toLowerCase()} et les catégories ouvertes.`
+    :`Armes ouvertes (réglage par défaut de la plupart des modes) : tout est équipable, la catégorie signature donne un bonus.`);
+  let html='';
+  for(const k of visibleCats()){
+    const list=W.filter(w=>w.cat===k&&(!st.onlyNew||w.s==='Saison 5')&&(!q||w.nm.toLowerCase().includes(q)));
+    if(!list.length) continue;
+    const isSig=c.cat===k;
+    const other=SIG[k]&&!isSig;
+    html+=`<section class="group"><h2>${CATS[k]} <span class="n">${list.length}</span>${isSig?'<span class="sigtag">SIGNATURE</span>':''}${other?`<span class="n">· signature ${CLASSES.find(x=>x.id===SIG[k]).nm}</span>`:''}</h2><div class="list">`+
+      list.map(w=>`<button class="w${st.sel===w.nm?' sel':''}" data-w="${w.nm}"><span class="art">${gunSvg(w.cat)}</span><span class="row"><span><span class="nm">${w.nm}</span><span class="sub">${w.s} · ${w.un}</span></span><span class="badges">${badge(w)}</span></span></button>`).join('')+`</div></section>`;
+  }
+  $('#out').innerHTML=html||'<div class="empty">Aucune arme ne correspond. Essaie un autre nom ou retire le filtre.</div>';
+}
+function showDetail(n){
+  const w=W.find(x=>x.nm===n); if(!w) return;
+  st.sel=n; render();
+  const sigCls=SIG[w.cat]?CLASSES.find(x=>x.id===SIG[w.cat]).nm:'Toutes (catégorie ouverte)';
+  const tier=w.t==='new'?'Nouveauté S5, pas encore classée':w.t==='soon'?'Pas encore sortie':w.t?`Tier ${w.t}`:'Non classée';
+  const d=$('#detail');
+  d.innerHTML=`<div class="in"><div class="top"><div><div class="eyebrow">${CATS[w.cat]}</div><h3>${w.nm}</h3></div><button class="x" id="close">Fermer</button></div>
+   ${w.d?`<p>${w.d}</p>`:''}
+   <div class="meta"><span>Classe signature <b>${sigCls}</b></span><span>Ajout <b>${w.s}</b></span><span>Déblocage <b>${w.un}</b></span><span>Méta <b>${tier}</b></span></div>
+   ${buildHtml(w.nm,w.cat)}</div>`;
+  d.hidden=false;
+}
+function buildHtml(n,cat){
+  const b=B[n];
+  if(!b) return `<div class="hero">${gunSvg(cat)}</div><div class="eyebrow" style="margin-top:6px">Build conseillé</div><p style="color:var(--mute)">Pas encore de build publié pour cette arme.</p>`;
+  const max=b[9]||100, pts=b[8];
+  return `<div class="hero">${gunSvg(cat,SLOTS.map((s,i)=>[i,!!b[i]]))}</div>
+   <div class="eyebrow" style="margin-top:6px">Build conseillé</div>
+   <div class="pts">Points utilisés : ${pts} / ${max}<div class="bar"><i style="width:${pts/max*100}%"></i></div></div>
+   <div class="build">${SLOTS.map((s,i)=>`<div class="slot${b[i]?'':' off'}"><b><i>${i+1}</i>${s}</b><span>${b[i]||'Vide'}</span></div>`).join('')}</div>`;
+}
+function renderAcc(){
+  $('#accView').innerHTML=`
+   <div class="rule">
+    <div><b>Budget par arme</b><span>100 pts</span><small>Chaque accessoire coûte des points : il faut faire des choix.</small></div>
+    <div><b>Armes de poing</b><span>60 pts</span><small>Budget réduit pour les secondaires.</small></div>
+    <div><b>Déblocage</b><span>Maîtrise</span><small>Presque chaque niveau de maîtrise d’une arme débloque un accessoire pour elle.</small></div>
+   </div>
+   ${ACC.map((a,i)=>`<section class="slotcard"><div class="mini">${gunSvg(i===2?'DMR':i===7?'SNI':'AR',[[SLOTS.indexOf(a.s),true]])}</div><h2>${a.s}</h2><p>${a.p}</p>${a.o.map(o=>`<div class="opt"><b>${o[0]}${o[2]?`<em>${o[2]}</em>`:''}</b><span>${o[1]}</span></div>`).join('')}</section>`).join('')}
+   <p class="mode">Les coûts indiqués sont des exemples relevés sur des builds ; ils peuvent varier selon l’arme. Touche une arme dans l’onglet Armes pour voir son build complet.</p>`;
+}
+function setView(v){
+  st.view=v;
+  $('#vArmes').setAttribute('aria-pressed',v==='armes');$('#vAcc').setAttribute('aria-pressed',v==='acc');
+  $('#armView').hidden=v!=='armes';$('#accView').hidden=v!=='acc';
+  if(v==='acc'){$('#detail').hidden=true;st.sel=null}
+}
+$('#vArmes').addEventListener('click',()=>setView('armes'));
+$('#vAcc').addEventListener('click',()=>setView('acc'));
+renderAcc();
+document.addEventListener('click',e=>{
+  const c=e.target.closest('.cls'); if(c){st.cls=c.dataset.id; try{localStorage.setItem('bf6cls',st.cls)}catch(_){} renderClasses();renderBrief();render();return}
+  const w=e.target.closest('.w'); if(w){showDetail(w.dataset.w);return}
+  if(e.target.id==='close'){$('#detail').hidden=true;st.sel=null;render()}
+});
+$('#q').addEventListener('input',e=>{st.q=e.target.value;render()});
+$('#fNew').addEventListener('click',e=>{st.onlyNew=!st.onlyNew;e.currentTarget.setAttribute('aria-pressed',st.onlyNew);render()});
+$('#fMode').addEventListener('click',e=>{st.closed=!st.closed;e.currentTarget.setAttribute('aria-pressed',st.closed);render()});
+renderClasses();renderBrief();render();
+</script>
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}</script>
+</body>
+</html>
