@@ -31,6 +31,7 @@ jobs:
           npx cap sync android
       - name: Icônes de l'appli
         run: |
+          sudo apt-get install -y -qq imagemagick >/dev/null
           for d in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
             dir=android/app/src/main/res/mipmap-${d%%:*}
             mkdir -p $dir
