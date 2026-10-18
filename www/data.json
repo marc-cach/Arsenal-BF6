@@ -1,10 +1,10 @@
 {
- "version": "2026-10-18.1",
+ "version": "2026-10-18.2",
  "label": "Saison 5 · Siege of Vegas · MAJ 2.1.1.0",
  "date": "18 oct. 2026",
  "notes": [
-  "Saison 5 : ajout du Mk 24, du RSPR, du Z84M et de l’ELR-40",
-  "Builds d’accessoires pour toutes les armes"
+  "Builds de travis.valor pour SCW-10, CZ3A1, SVDM, KTS100 MK8 et SG 553R",
+  "Stats dégâts / cadence / chargeur pour ces armes"
  ],
  "weapons": [
   [
@@ -1305,5 +1305,202 @@
    "",
    95
   ]
+ },
+ "creator": {
+  "SCW-10": {
+   "by": "travis.valor",
+   "stats": [
+    35,
+    800,
+    25
+   ],
+   "slots": [
+    [
+     "Flash Comp",
+     20
+    ],
+    [
+     "Extended",
+     5
+    ],
+    null,
+    [
+     "25 Round",
+     45
+    ],
+    [
+     "Par défaut",
+     5
+    ],
+    [
+     "OSA-7",
+     10
+    ],
+    [
+     "Violet Laser",
+     10
+    ],
+    [
+     "Mag Catch",
+     5
+    ]
+   ],
+   "total": 100
+  },
+  "CZ3A1": {
+   "by": "travis.valor",
+   "stats": [
+    26,
+    981,
+    35
+   ],
+   "slots": [
+    [
+     "Compensator",
+     10
+    ],
+    [
+     "Extended",
+     5
+    ],
+    [
+     "Angled",
+     20
+    ],
+    [
+     "35 Fast",
+     20
+    ],
+    [
+     "Hollow Point",
+     15
+    ],
+    [
+     "OSA-7",
+     10
+    ],
+    [
+     "Violet Laser + Light",
+     15
+    ],
+    [
+     "Buffer",
+     5
+    ]
+   ],
+   "total": 100
+  },
+  "SVDM": {
+   "by": "travis.valor",
+   "stats": [
+    41,
+    300,
+    20
+   ],
+   "slots": [
+    [
+     "Suppressor (L)",
+     30
+    ],
+    [
+     "Extended",
+     5
+    ],
+    null,
+    [
+     "20 RND",
+     45
+    ],
+    [
+     "Long Range",
+     5
+    ],
+    [
+     "2.5x",
+     10
+    ],
+    null,
+    null
+   ],
+   "note": "Au choix : munitions Long Range ou Buffer (5 pts chacun).",
+   "total": 95
+  },
+  "KTS100 MK8": {
+   "by": "travis.valor",
+   "stats": [
+    26,
+    514,
+    60
+   ],
+   "slots": [
+    [
+     "Suppressor (L)",
+     30
+    ],
+    [
+     "Extended",
+     10
+    ],
+    [
+     "Ribbed Vertical",
+     20
+    ],
+    [
+     "60 Fast",
+     10
+    ],
+    [
+     "Synthetic",
+     20
+    ],
+    [
+     "Optique 10 pts (non précisée)",
+     10
+    ],
+    null,
+    null
+   ],
+   "total": 100
+  },
+  "SG 553R": {
+   "by": "travis.valor",
+   "stats": [
+    35,
+    720,
+    36
+   ],
+   "slots": [
+    [
+     "Compensator",
+     10
+    ],
+    [
+     "Extended",
+     5
+    ],
+    null,
+    [
+     "36 Round",
+     15
+    ],
+    [
+     "Hollow Point",
+     20
+    ],
+    [
+     "OSA-7",
+     10
+    ],
+    [
+     "120 Blue + Light",
+     35
+    ],
+    [
+     "Buffer",
+     5
+    ]
+   ],
+   "total": 100
+  }
  }
 }

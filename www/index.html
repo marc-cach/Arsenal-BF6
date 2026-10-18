@@ -23,6 +23,17 @@
 .news h2{margin:0;font-family:var(--display);font-size:1rem;text-transform:uppercase;letter-spacing:.05em;color:var(--new)}
 .news ul{margin:0;padding-left:18px}.news .x{align-self:flex-start}
 @media (max-width:400px){.upd span{display:none}}
+
+.srcs{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.src{background:transparent;border:1px solid var(--line);color:var(--fg);border-radius:999px;padding:6px 12px;font:600 .8rem var(--body);cursor:pointer}
+.src[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.stats div{border:1px solid var(--line);border-radius:5px;padding:6px 8px}
+.stats b{display:block;font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:500}
+.stats span{font-family:var(--display);font-weight:700;font-size:1.35rem;font-variant-numeric:tabular-nums}
+.stats small{font:500 .7rem var(--body);color:var(--mute)}
+.slot .cost{display:block;font-style:normal;font-family:var(--mono);font-size:.7rem;color:var(--accent)}
+.b.cr{color:var(--accent);border-color:var(--accent)}
 </style>
 <title>Arsenal BF6 Saison 5</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -248,7 +259,9 @@ const ACC=[
   ['CQB Suppressor','Silencieux court pour le combat rapproché (PM, fusils à pompe).'],
   ['Hybrid Suppressor (L)','Variante hybride, vue sur le M39 EMR.'],
   ['Compensated Brake','Frein de bouche qui supprime la montée verticale.','30 pts'],
-  ['Double-Port Brake','Frein de bouche, débloqué via la maîtrise (ex. M433 niv. 20).']]},
+  ['Double-Port Brake','Frein de bouche, débloqué via la maîtrise (ex. M433 niv. 20).'],
+  ['Flash Comp','Compensateur cache-flamme.','20 pts'],
+  ['Compensator','Compensateur pour le recul, peu coûteux.','10 pts']]},
  {s:'Canon',p:'Le canon joue sur la vélocité des balles, la portée et la maniabilité. Les longueurs exactes changent selon l’arme.',o:[
   ['Basic','Canon d’origine.'],
   ['Light','Plus léger : meilleure maniabilité, un peu moins de portée.'],
@@ -272,10 +285,12 @@ const ACC=[
   ['Hollow Point','Expansives, efficaces de près contre l’infanterie.'],
   ['Long-Range','Pour les tirs à longue distance (snipers, DMR).'],
   ['Tungsten Match','Munitions de précision, vues sur la VSSM.'],
+  ['Synthetic','Munitions vues sur le KTS100 MK8.','20 pts'],
   ['Buckshot','Chevrotine pour fusils à pompe.'],
   ['Slugs','Balle unique pour fusils à pompe : plus de portée.']]},
  {s:'Optique',p:'Du point rouge (1.0x) à la lunette 8x. On peut ajouter des accessoires d’optique.',o:[
   ['1.0x – 1.25x','Points rouges / reflex : combat rapproché.','10 pts'],
+  ['OSA-7 1.00x','Viseur reflex très utilisé sur PM et carabines.','10 pts'],
   ['1.5x – 3.0x','Moyenne portée (fusils d’assaut, FM, carabines).'],
   ['4.0x – 8.0x','Longue portée (DMR, snipers).','≈20 pts'],
   ['Anti-Glare','Accessoire d’optique qui limite le reflet de la lunette.'],
@@ -292,7 +307,7 @@ const ACC=[
   ['Mag Catch','Arrêtoir de chargeur, vu sur le PW7A2.']]}
 ];
 
-let st={cls:'assault',q:'',onlyNew:false,closed:false,sel:null,view:'armes'};
+let st={cls:'assault',q:'',onlyNew:false,closed:false,sel:null,view:'armes',bsrc:'cr'};
 try{const v=localStorage.getItem('bf6cls'); if(v) st.cls=v}catch(e){}
 
 const $=s=>document.querySelector(s);
@@ -312,6 +327,7 @@ function visibleCats(){
 }
 function badge(w){
   let h='';
+  if(DATA&&DATA.creator&&DATA.creator[w.nm]) h+='<span class="b cr" title="Build de créateur">★</span>';
   if(w.t==='new') h+='<span class="b s5">S5</span>';
   else if(w.t==='soon') h+='<span class="b soon">À venir</span>';
   else if(w.t) h+=`<span class="b t-${w.t}">${w.t}</span>`;
@@ -347,13 +363,24 @@ function showDetail(n){
   d.hidden=false;
 }
 function buildHtml(n,cat){
+  const cr=DATA&&DATA.creator&&DATA.creator[n];
   const b=B[n];
+  if(cr&&(st.bsrc==='cr'||!b)) return srcTabs(n,b,cr,'cr')+statsHtml(cr)+slotsHtml(cat,cr.slots.map(x=>x?x[0]:''),cr.slots.map(x=>x?x[1]:null),cr.total,100)+(cr.note?`<p class="mode">${cr.note}</p>`:'')+`<p class="mode">Build de @${cr.by}.</p>`;
   if(!b) return `<div class="hero">${gunSvg(cat)}</div><div class="eyebrow" style="margin-top:6px">Build conseillé</div><p style="color:var(--mute)">Pas encore de build publié pour cette arme.</p>`;
-  const max=b[9]||100, pts=b[8];
-  return `<div class="hero">${gunSvg(cat,SLOTS.map((s,i)=>[i,!!b[i]]))}</div>
-   <div class="eyebrow" style="margin-top:6px">Build conseillé</div>
+  return (cr?srcTabs(n,b,cr,'meta')+statsHtml(cr):'<div class="eyebrow" style="margin-top:6px">Build conseillé</div>')+slotsHtml(cat,b.slice(0,8),null,b[8],b[9]||100);
+}
+function srcTabs(n,b,cr,cur){
+  return `<div class="srcs" role="group" aria-label="Source du build">${b?`<button class="src" data-src="meta" aria-pressed="${cur==='meta'}">Build méta</button>`:''}<button class="src" data-src="cr" aria-pressed="${cur==='cr'}">Build @${cr.by}</button></div>`;
+}
+function statsHtml(cr){
+  if(!cr.stats)return '';
+  const [dmg,rof,mag]=cr.stats;
+  return `<div class="stats"><div><b>Dégâts</b><span>${dmg}</span></div><div><b>Cadence</b><span>${rof}<small> cps/min</small></span></div><div><b>Chargeur</b><span>${mag}</span></div></div>`;
+}
+function slotsHtml(cat,vals,costs,pts,max){
+  return `<div class="hero">${gunSvg(cat,SLOTS.map((s,i)=>[i,!!vals[i]]))}</div>
    <div class="pts">Points utilisés : ${pts} / ${max}<div class="bar"><i style="width:${pts/max*100}%"></i></div></div>
-   <div class="build">${SLOTS.map((s,i)=>`<div class="slot${b[i]?'':' off'}"><b><i>${i+1}</i>${s}</b><span>${b[i]||'Vide'}</span></div>`).join('')}</div>`;
+   <div class="build">${SLOTS.map((s,i)=>`<div class="slot${vals[i]?'':' off'}"><b><i>${i+1}</i>${s}</b><span>${vals[i]||'Vide'}</span>${costs&&costs[i]!=null?`<em class="cost">${costs[i]} pts</em>`:''}</div>`).join('')}</div>`;
 }
 function renderAcc(){
   $('#accView').innerHTML=`
@@ -377,6 +404,7 @@ renderAcc();
 document.addEventListener('click',e=>{
   const c=e.target.closest('.cls'); if(c){st.cls=c.dataset.id; try{localStorage.setItem('bf6cls',st.cls)}catch(_){} renderClasses();renderBrief();render();return}
   const w=e.target.closest('.w'); if(w){showDetail(w.dataset.w);return}
+  const sb=e.target.closest('.src'); if(sb){st.bsrc=sb.dataset.src;showDetail(st.sel);return}
   if(e.target.id==='close'){$('#detail').hidden=true;st.sel=null;render()}
 });
 $('#q').addEventListener('input',e=>{st.q=e.target.value;render()});
