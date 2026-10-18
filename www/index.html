@@ -11,7 +11,19 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.upd{flex-shrink:0;display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);color:var(--fg);border-radius:999px;padding:8px 12px;font:600 .78rem var(--body);cursor:pointer;position:relative}
+.upd svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.upd.avail{background:var(--new);border-color:var(--new);color:#06261b}
+.upd.avail::after{content:"";position:absolute;top:-3px;right:-3px;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
+.upd.busy svg{opacity:.5}
+@media (prefers-reduced-motion:no-preference){.upd.avail svg{animation:bob 1.2s ease-in-out infinite}@keyframes bob{50%{transform:translateY(3px)}}}
+.news{background:var(--panel);border:1px solid var(--new);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.news h2{margin:0;font-family:var(--display);font-size:1rem;text-transform:uppercase;letter-spacing:.05em;color:var(--new)}
+.news ul{margin:0;padding-left:18px}.news .x{align-self:flex-start}
+@media (max-width:400px){.upd span{display:none}}
+</style>
 <title>Arsenal BF6 Saison 5</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
@@ -139,11 +151,18 @@ footer{color:var(--mute);font-size:.76rem}
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div class="eyebrow">Saison 5 · Siege of Vegas · MAJ 2.1.1.0</div>
+  <header class="top">
+    <div style="min-width:0">
+    <div class="eyebrow" id="label">Saison 5 · Siege of Vegas · MAJ 2.1.1.0</div>
     <h1>Arsenal par classe</h1>
     <p>Choisis une classe, filtre et touche une arme pour voir sa fiche.</p>
+    </div>
+    <button class="upd" id="upd" aria-label="Rechercher une mise à jour">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>
+      <span id="updTxt">Mise à jour</span>
+    </button>
   </header>
+  <section class="news" id="news" hidden></section>
 
   <div class="views" role="group" aria-label="Vue">
     <button id="vArmes" aria-pressed="true">Armes</button>
@@ -189,84 +208,7 @@ const CLASSES=[
 const CATS={AR:'Fusils d’assaut',SMG:'Pistolets-mitrailleurs',LMG:'Fusils-mitrailleurs',SNI:'Fusils de précision',CAR:'Carabines',DMR:'Fusils de tireur d’élite (DMR)',SG:'Fusils à pompe',PI:'Armes de poing'};
 const SIG={AR:'assault',SMG:'engineer',LMG:'support',SNI:'recon'};
 // [nom, cat, saison, déblocage, tier, description]
-const W=[
- ['M433','AR','Lancement','Par défaut','A','Polyvalent et facile à prendre en main, idéal pour débuter.'],
- ['NVO-228E','AR','Lancement','Progression','A','7,62 mm, solide à moyenne portée.'],
- ['B36A4','AR','Lancement','Progression','A','Modulable, à l’aise de près comme à distance.'],
- ['AK4D','AR','Lancement','Progression','A','Cadence lente, à privilégier à moyenne/longue portée.'],
- ['KORD 6P67','AR','Lancement','Progression','S','Recul faible et cadence élevée ; référence actuelle de la catégorie.'],
- ['L85A3','AR','Lancement','Progression','A','Bullpup à cadence régulière, orienté moyenne/longue portée.'],
- ['SOR-556 MK2','AR','Lancement','Progression','A','Fusil 5,56 équilibré.'],
- ['TR-7','AR','Lancement','Progression','C','Le moins bien classé de la catégorie.'],
- ['VCR-2','AR','Saison 2','Passe de combat S2','A','Ajouté avec Extreme Measures.'],
- ['M16A4','AR','Saison 3','Passe de combat S3','A','Retour d’un classique de la série.'],
- ['EF88','AR','Saison 4','Passe S4 (rattrapage)','A','Bullpup précis pour la moyenne/longue portée.'],
- ['Mk 24','AR','Saison 5','Passe de combat S5','new','Moins de munitions par chargeur mais dégâts élevés et constants à distance.'],
-
- ['SGX','SMG','Lancement','Par défaut','A','PM de départ, efficace en combat rapproché.'],
- ['PW5A3','SMG','Lancement','Rang 6','S','Le PM le plus fort du méta actuel, jusqu’à moyenne portée.'],
- ['PW7A2','SMG','Lancement','Rang 19','B','PDW compacte et mobile.'],
- ['UMG-40','SMG','Lancement','Rang 29','A','Polymère en .40, cadence basse.'],
- ['USG-90','SMG','Lancement','Rang 36','C','Le moins performant de la catégorie.'],
- ['KV9','SMG','Lancement','Rang 45','B','Cadence très élevée qui vide le chargeur en un instant.'],
- ['SCW-10','SMG','Lancement','Maîtrise Close Quarters 1','A','10 mm, plus de puissance d’arrêt que les autres PDW.'],
- ['SL9','SMG','Lancement','Maîtrise Close Quarters 2','B','Design atypique, adaptable.'],
- ['CZ3A1','SMG','Saison 2','Passe de combat S2','',''],
- ['PP-19','SMG','Saison 3','Mi-saison S3','',''],
- ['RSPR','SMG','Saison 5','Passe de combat S5','new','PDW au comportement de fusil : cadence régulière et gros dégâts. Pour les rushs.'],
-
- ['L110','LMG','Lancement','Par défaut','A','Arme d’appui 5,56 polyvalente.'],
- ['DRS-IAR','LMG','Lancement','Rang 9','S','Le FM le plus régulier du moment.'],
- ['M/60','LMG','Lancement','Rang 20','C','Gros calibre, cadence lente.'],
- ['RPKM','LMG','Lancement','Rang 30','B','L’arme d’appui légère d’origine.'],
- ['M123K','LMG','Lancement','Rang 38','B','Pensé pour un appui mobile.'],
- ['M250','LMG','Lancement','Rang 46','B','Très précis, mais le plus lent à tirer.'],
- ['KTS100 MK8','LMG','Lancement','Maîtrise Bullet Storm 1','S','Parmi les meilleures armes du jeu.'],
- ['M240L','LMG','Lancement','Maîtrise Bullet Storm 2','C',''],
- ['M121 A2','LMG','Saison 2','Passe de combat S2','',''],
- ['RPK-74M','LMG','Saison 3','Passe de combat S3','S','Meilleure arme ajoutée en saison 3.'],
- ['Z84M','LMG','Saison 5','Passe de combat S5','new','Pour le tir soutenu et la tenue de positions.'],
-
- ['M2010 ESR','SNI','Lancement','Progression','S','Le sniper de référence.'],
- ['SV-98','SNI','Lancement','Progression','A',''],
- ['PSR','SNI','Lancement','Progression','A',''],
- ['Mini Scout','SNI','Saison 1','Défis S1','','Verrou léger pour un éclaireur agressif et mobile.'],
- ['L115','SNI','Saison 3','Passe de combat S3','','Verrou longue portée.'],
- ['Interdictor','SNI','Saison 4','Défi de rattrapage S4','',''],
- ['ELR-40','SNI','Saison 5','Passe de combat S5','new','Verrou longue portée, taillé pour les grandes lignes de vue d’Area 51.'],
-
- ['M4A1','CAR','Lancement','Progression','S','Cadence élevée, idéale pour les assauts d’objectif.'],
- ['AK-205','CAR','Lancement','Niveau 22','C','5,45 mm, bonne tenue à distance.'],
- ['M417 A2','CAR','Lancement','Progression','','Carabine 7,62 : gros dégâts, cadence posée.'],
- ['QBZ-192','CAR','Lancement','Progression','A','Calibre 5,8 mm.'],
- ['SG 553R','CAR','Lancement','Progression','S','Très forte, ciblée par les débats d’équilibrage.'],
- ['M277','CAR','Lancement','Progression','B',''],
- ['GRT-BC','CAR','Lancement','Progression','',''],
- ['SOR-300SC','CAR','Saison 1','Défis S1','A','.300 Blackout : frappe plus fort, cadence plus lente.'],
- ['BROD 3','CAR','Saison 4','Défi de rattrapage S4','A','Agressive et polyvalente.'],
- ['NSW4','CAR','Saison 5','Phase 2 · 10 nov.','soon','Arrive avec Casino Heist.'],
-
- ['M39 EMR','DMR','Lancement','Rang 4','A','DMR par défaut, fiable.'],
- ['LMR27','DMR','Lancement','Rang 16','C',''],
- ['SVK-8.6','DMR','Lancement','Rang 33','B',''],
- ['SVDM','DMR','Lancement','Maîtrise Deadeye 1','S','Le meilleur DMR actuel.'],
- ['GRT-CPS','DMR','Saison 2','Passe de combat S2','',''],
- ['VSSM','DMR','Saison 4','Défi de rattrapage S4','','Silencieux intégré, munitions subsoniques, mode automatique.'],
-
- ['M87A1','SG','Lancement','Progression','S','Puissance de feu redoutable au contact.'],
- ['M1014','SG','Lancement','Progression','A','Semi-automatique.'],
- ['18.5KS-K','SG','Lancement','Progression','',''],
- ['DB-12','SG','Saison 1','Défis S1','','Double tube : deux tirs avant de pomper.'],
-
- ['P18','PI','Lancement','Par défaut','B',''],
- ['ES 5.7','PI','Lancement','Progression','A',''],
- ['M45A1','PI','Lancement','Progression','C',''],
- ['M44','PI','Lancement','Progression','S','Revolver puissant.'],
- ['M357 Trait','PI','Saison 1','Défis S1','S','Revolver.'],
- ['GGH-22','PI','Saison 1','Défis S1','','Cadence rapide et grande capacité, dégâts modestes.'],
- ['VZ.61','PI','Saison 2','Passe de combat S2','',''],
- ['MK 1 MOD 8','PI','Saison 5','Phase 3 · 8 déc.','soon','Annoncée pour Frozen Aces ; catégorie non confirmée.']
-].map(a=>({nm:a[0],cat:a[1],s:a[2],un:a[3],t:a[4],d:a[5]}));
+let W=[];
 
 // Silhouettes originales par catégorie (viewBox 240x80) + points d'ancrage des emplacements
 // ordre des ancres : bouche, canon, sous-canon, chargeur, munitions, optique, laser, ergonomie
@@ -296,75 +238,7 @@ function gunSvg(cat,marks){
 }
 // Build conseillé : [bouche, canon, sous-canon, chargeur, munitions, optique, laser/lampe, ergonomie, points]
 const SLOTS=['Bouche','Canon','Sous-canon','Chargeur','Munitions','Optique','Laser / lampe','Ergonomie'];
-const B={
- 'SOR-556 MK2':['Standard Suppressor','Extended 18"','6H64 Vertical','36 RND','Standard','Au choix','50MW Violet','',100],
- 'TR-7':['Standard Suppressor','Light 432MM','','25 Fast','Standard','1.25x','50MW Violet','',100],
- 'KORD 6P67':['Long Suppressor','Heavy 415MM','Stippled Stubby','30 RND','Standard','2.0x ou 3.0x','50MW Violet','',100],
- 'VCR-2':['Long Suppressor','Extended 20"','Ribbed Stubby','30 RND','Standard','Au choix','50MW Violet','',100],
- 'M433':['Lightened Suppressor','Extended 18.9"','Ribbed Stubby','30 Fast','Standard','Au choix','50MW Violet','',100],
- 'B36A4':['Lightened Suppressor','510MM Fluted','6H64 Vertical','30 Fast','Standard','Au choix','50MW Violet','Buffer',100],
- 'NVO-228E':['Long Suppressor','458MM Custom','6H64 Vertical','30 Fast','Standard','Au choix','50MW Violet','',100],
- 'M16A4':['Long Suppressor','20" Factory','Ribbed Stubby','30 RND','Standard','Au choix','50MW Violet','',100],
- 'EF88':['Standard Suppressor','20" Marksman','6H64 Vertical','30 RND','Standard','Au choix','50MW Violet','',100],
- 'Mk 24':['Lightened Suppressor','Basic 16"','Ribbed Stubby','20 RND','Standard','Au choix','50MW Violet','',100],
- 'AK4D':['CQB Suppressor','Heavy Ext 600MM','6H64 Vertical','20 Fast','Standard','2.5x ou 3.0x','50MW Violet','',100],
- 'L85A3':['Long Suppressor','Heavy Ext 646MM','Ribbed Stubby','30 RND','Standard','Au choix','50MW Violet','',100],
- 'PW5A3':['CQB Suppressor','Extended 245MM','Folding Stubby','30 Fast','Standard','1.25x','5MW Green','',100],
- 'SL9':['Standard Suppressor','Extended 11"','6H64 Vertical','30 RND','Standard','1.25x','120MW Blue','',100],
- 'SGX':['CQB Suppressor','Extended 8"','Ribbed Vertical','30 RND','Standard','1.25x','5MW Green','',95],
- 'PW7A2':['Lightened Suppressor','Heavy 180MM','Slim Angled','30 Fast','Standard','1.25x','5MW Red','Mag Catch',100],
- 'UMG-40':['CQB Suppressor','Extended 305MM','6H64 Vertical','30 RND','Hollow Point','1.5x ou 2.0x','','',100],
- 'USG-90':['CQB Suppressor','Heavy Ext 407MM','','50 RND','Hollow Point','1.5x ou 2.0x','120MW Blue','',100],
- 'CZ3A1':['CQB Suppressor','Extended 16.2"','6H64 Vertical','30 RND','Standard','Au choix','5MW Red','',100],
- 'PP-19':['CQB Suppressor','238MM Pencil','Alloy Vertical','30 RND','Standard','Au choix','5MW Green','',100],
- 'RSPR':['CQB Suppressor','Light 7.75"','Alloy Vertical','20 RND','Standard','1.0x ou 1.25x','5MW Green','',100],
- 'KV9':['Standard Suppressor','Basic 5.5"','Ribbed Stubby','23 RND','Standard','1.25x','','',100],
- 'SCW-10':['Standard Suppressor','Extended 200MM','Folding Vertical','20 RND','Standard','1.25x','50MW Blue','',100],
- 'Mini Scout':['Long Suppressor','Extended 18"','','10 Fast','Standard','6.0x+ · Anti-Glare','50MW Violet + Range Finder','',100],
- 'M2010 ESR':['','Extended 26"','','5 Fast','Long-Range','6.0x+ · Anti-Glare','Range Finder','DLC Bolt',100],
- 'SV-98':['','Extended 730MM','','5 RND','Long-Range','6.0x+ · Anti-Glare','Range Finder','ADS Bolt',95],
- 'PSR':['','Extended 27"','','7 RND','Long-Range','8.0x+ · Anti-Glare','Range Finder','ADS Bolt',95],
- 'L115':['Lightened Suppressor','32" Custom','','5 RND','Standard','6.0x+ · Anti-Glare','','ADS Bolt',100],
- 'ELR-40':['Long Suppressor','Light 29"','Slim Angled','Single Shot','Standard','6.0x+ · Anti-Glare','50MW Violet','',100],
- 'Interdictor':['Long Suppressor','Extended','Slim Angled','5 RND','Standard','6.0x+ · Anti-Glare','50MW Violet + Range Finder','',100],
- 'DRS-IAR':['Long Suppressor','Heavy Ext 20"','Ribbed Stubby','30 Fast','Standard','3.0x ou 4.0x','50MW Violet','',100],
- 'M250':['Long Suppressor','Heavy Ext 556MM','Stippled Stubby','50 RND','Standard','3.0x ou 4.0x','50MW Violet','',100],
- 'M121 A2':['Long Suppressor','Heavy Ext 660MM','Stippled Stubby','50 RND','Standard','Au choix','50MW Violet','',100],
- 'L110':['Long Suppressor','Light 349MM','Classic Grip Pod','','Standard','2.0x ou 3.0x','50MW Violet','',100],
- 'M/60':['Long Suppressor','Heavy Ext 22"','Stippled Stubby','50 RND','Standard','2.0x ou 3.0x','50MW Violet','',100],
- 'RPKM':['Standard Suppressor','Extended 600MM','Canted Stubby','40 Fast','Standard','1.75x ou 2.5x','50MW Violet','',100],
- 'M123K':['Long Suppressor','Heavy Ext 612MM','Stippled Stubby','100 RND','Standard','2.5x ou 3.0x','50MW Violet','',100],
- 'KTS100 MK8':['Long Suppressor','Heavy Ext 508MM','Stippled Stubby','60 RND','Standard','2.5x ou 3.0x','50MW Violet','',100],
- 'RPK-74M':['Lightened Suppressor','590MM Factory','Ribbed Stubby','45 RND','Standard','2.0x ou 2.5x','50MW Violet','',100],
- 'Z84M':['Standard Suppressor','Light 605MM','Slim Angled','100 Fast','Standard','Au choix','50MW Violet','',100],
- 'M240L':['Long Suppressor','Heavy Ext 24"','Classic Grip Pod','75 RND','Standard','2.5x ou 3.0x','50MW Violet','',100],
- 'P18':['Standard Suppressor','Basic 3.9"','','17 RND','Standard','1.25x','5MW Green','',60,60],
- 'ES 5.7':['Standard Suppressor','Basic 122MM','','20 RND','Standard','1.25x','5MW Green','',60,60],
- 'M45A1':['Standard Suppressor','Basic 5"','','7 RND','Standard','1.25x','5MW Green','',60,60],
- 'M44':['','Extended 8.37"','','6 RND','Hollow Point','Au choix','','',50,60],
- 'GGH-22':['Standard Suppressor','Basic 114MM','','15 RND','Standard','1.25x','5MW Green','',60,60],
- 'M357 Trait':['','Basic 5"','','8 Fast','Hollow Point','1.25x','5MW Green','',60,60],
- 'VZ.61':['','Basic 115MM','','20 RND','Standard','Basic Sight','','',60,60],
- 'SVK-8.6':['Long Suppressor','Extended 560MM','6H64 Vertical','10 RND','Long-Range','4.0x+','50MW Violet','',100],
- 'M39 EMR':['Hybrid Suppressor (L)','Extended 22"','Stippled Stubby','20 RND','Standard','4.0x+','50MW Violet','',100],
- 'GRT-CPS':['Lightened Suppressor','Extended 20"','Folding Stubby','20 Fast','Standard','3.0x+','50MW Violet','',100],
- 'VSSM':['','200M Factory','Ribbed Stubby','20 Fast','Tungsten Match','3.0x+','50MW Violet','',100],
- 'SVDM':['Standard Suppressor','Extended 620MM','Stippled Stubby','10 RND','Standard','4.0x+','50MW Violet','',100],
- 'LMR27':['Standard Suppressor','Extended 24"','Stippled Stubby','10 RND','Standard','4.0x+','50MW Violet','',100],
- 'M4A1':['Standard Suppressor','12.5" Fluted','Ribbed Vertical','30 Fast','Standard','1.25x','50MW Violet','',100],
- 'SG 553R':['Standard Suppressor','Extended 303MM','Stippled Stubby','30 RND','Standard','2.0x ou 3.0x','50MW Violet','',100],
- 'M277':['Lightened Suppressor','Extended 16"','6H64 Vertical','20 RND','Standard','Au choix','50MW Violet','',100],
- 'M417 A2':['Standard Suppressor','Extended 16.5"','Ribbed Stubby','20 Fast','Standard','Au choix','50MW Violet','',100],
- 'QBZ-192':['Standard Suppressor','Extended 14.5"','6H64 Vertical','36 RND','Standard','Au choix','50MW Violet','',100],
- 'SOR-300SC':['Standard Suppressor','Extended 10.5"','Full Angled','36 RND','Standard','2.0x ou 3.0x','50MW Violet','',100],
- 'BROD 3':['Standard Suppressor','11" Pencil','Ribbed Stubby','30 RND','Standard','Au choix','50MW Violet','',100],
- 'AK-205':['Standard Suppressor','Heavy 314MM','6H64 Vertical','30 Fast','Hollow Point','1.5x ou 2.0x','50MW Violet','',100],
- 'GRT-BC':['Standard Suppressor','Extended 14.5"','6H64 Vertical','36 RND','Standard','Au choix','50MW Violet','',100],
- 'M87A1':['','Basic 20"','Slim Angled','7 RND','Buckshot','Au choix','120MW Blue + Flashlight','',90],
- 'M1014':['','Basic 18.5"','Alloy Vertical','6 RND','Buckshot','Au choix','120MW Blue + Flashlight','',95],
- 'DB-12':['CQB Suppressor','18.9" Factory','Ribbed Stubby','14 RND','Buckshot','','5MW Green','',95],
- '18.5KS-K':['','Extended 430MM','','8 Fast','Slugs','Au choix','50MW Blue','',95]
-};
+let B={};
 // Catalogue des accessoires par emplacement
 const ACC=[
  {s:'Bouche',p:'Silencieux et freins de bouche. Un silencieux évite d’apparaître sur la mini-carte quand tu tires.',o:[
@@ -508,7 +382,50 @@ document.addEventListener('click',e=>{
 $('#q').addEventListener('input',e=>{st.q=e.target.value;render()});
 $('#fNew').addEventListener('click',e=>{st.onlyNew=!st.onlyNew;e.currentTarget.setAttribute('aria-pressed',st.onlyNew);render()});
 $('#fMode').addEventListener('click',e=>{st.closed=!st.closed;e.currentTarget.setAttribute('aria-pressed',st.closed);render()});
-renderClasses();renderBrief();render();
+
+// ---- Données et mises à jour ----
+const REMOTE='https://raw.githubusercontent.com/marc-cach/Arsenal-BF6/main/www/data.json';
+let DATA=null;
+function applyData(d){
+  DATA=d;
+  W=d.weapons.map(a=>({nm:a[0],cat:a[1],s:a[2],un:a[3],t:a[4],d:a[5]}));
+  B=d.builds;
+  document.getElementById('label').textContent=d.label;
+  renderClasses();renderBrief();render();
+}
+function newer(a,b){return String(a).localeCompare(String(b),undefined,{numeric:true})>0}
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+let pending=null;
+function setUpd(state,txt){const b=document.getElementById('upd');b.classList.remove('avail','busy');if(state)b.classList.add(state);document.getElementById('updTxt').textContent=txt}
+function showNews(d){
+  const n=document.getElementById('news');
+  n.innerHTML=`<h2>Mise à jour installée · ${d.date||''}</h2><div class="mode">${d.label}</div><ul>${(d.notes||[]).map(x=>`<li>${x}</li>`).join('')}</ul><button class="x" id="newsClose">OK</button>`;
+  n.hidden=false;
+}
+async function checkRemote(silent){
+  if(!silent)setUpd('busy','Recherche…');
+  try{
+    const r=await fetch(REMOTE+'?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok)throw new Error(r.status);
+    const d=await r.json();
+    if(d.version&&newer(d.version,DATA.version)){pending=d;setUpd('avail','Nouvelle version');}
+    else{pending=null;setUpd('',silent?'Mise à jour':'À jour');if(!silent)setTimeout(()=>setUpd('','Mise à jour'),2500)}
+  }catch(e){pending=null;setUpd('',silent?'Mise à jour':'Hors ligne');if(!silent)setTimeout(()=>setUpd('','Mise à jour'),2500)}
+}
+document.getElementById('upd').addEventListener('click',()=>{
+  if(pending){const d=pending;pending=null;lsSet('bf6data',JSON.stringify(d));applyData(d);setUpd('','À jour');showNews(d);setTimeout(()=>setUpd('','Mise à jour'),2500)}
+  else checkRemote(false);
+});
+document.addEventListener('click',e=>{if(e.target.id==='newsClose')document.getElementById('news').hidden=true});
+(async function boot(){
+  let local=null;
+  try{local=await (await fetch('data.json')).json()}catch(e){}
+  let cached=null;try{cached=JSON.parse(lsGet('bf6data')||'null')}catch(e){}
+  const d=cached&&(!local||newer(cached.version,local.version))?cached:local;
+  if(d)applyData(d);else document.getElementById('out').innerHTML='<div class="empty">Impossible de charger les armes. Vérifie ta connexion puis relance l’appli.</div>';
+  if(d)checkRemote(true);
+})();
 </script>
 <script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}</script>
 </body>
